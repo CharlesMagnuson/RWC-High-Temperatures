@@ -1,9 +1,11 @@
 import type { DayRecord } from './records';
 
 /**
- * Deterministic 28-day sample ending 2026-07-02, exercising: hot and cold days,
- * every intensity bin, the ±1 neutral band, a missing actual, a missing
- * forecast, and a June→July month boundary.
+ * Deterministic 28-record sample spanning 2026-06-04 → 2026-07-02 (29 calendar
+ * days), exercising: hot and cold days, every intensity bin, the neutral band,
+ * a missing actual, a missing forecast, a June→July month boundary, and a true
+ * array gap — Monday 2026-06-22 is entirely absent, as happens in production
+ * when both captures fail for a day.
  */
 export function sampleRecords(): DayRecord[] {
   const deltas: (number | 'no-actual' | 'no-forecast')[] = [
@@ -12,9 +14,12 @@ export function sampleRecords(): DayRecord[] {
   ];
   const forecasts = [71, 73, 74, 76, 72, 70, 69, 68, 70, 78, 72, 71, 74, 75,
     71, 73, 74, 76, 72, 70, 69, 68, 70, 78, 72, 71, 74, 75];
-  const start = new Date('2026-06-05T00:00:00Z');
+  const start = new Date('2026-06-04T00:00:00Z');
+  const dates = Array.from({ length: 29 }, (_, i) =>
+    new Date(start.getTime() + i * 86400_000).toISOString().slice(0, 10),
+  ).filter((date) => date !== '2026-06-22');
   return deltas.map((d, i) => {
-    const date = new Date(start.getTime() + i * 86400_000).toISOString().slice(0, 10);
+    const date = dates[i];
     const f = forecasts[i];
     return {
       date,

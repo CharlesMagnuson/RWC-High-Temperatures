@@ -22,14 +22,17 @@ export const binOf = (delta: number): number => {
   return a >= 9 ? 4 : a >= 7 ? 3 : a >= 5 ? 2 : a >= 3 ? 1 : 0;
 };
 
-/** null = inside the ±1 neutral band (rendered as a single gray dot). */
+/** null = inside the |Δ| < 1 neutral band (rendered as a single gray dot); exactly ±1 is bin 0, not neutral. */
 export function colorOf(delta: number, mode: Mode): string | null {
   if (Math.abs(delta) < 1) return null;
   const arm = delta > 0 ? ARMS[mode].hot : ARMS[mode].cold;
   return arm[binOf(delta)];
 }
 
-/** Chip text color by fill luminance (WCAG relative luminance, 0.35 threshold). */
+/**
+ * Chip text color by fill luminance (WCAG relative luminance, 0.35 threshold).
+ * Expects a 6-hex `#rrggbb` string only (no shorthand, no alpha channel).
+ */
 export function inkFor(hex: string): string {
   const [r, g, b] = [1, 3, 5]
     .map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
