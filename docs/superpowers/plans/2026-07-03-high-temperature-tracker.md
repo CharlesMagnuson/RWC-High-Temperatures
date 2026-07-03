@@ -1132,6 +1132,10 @@ Design spec: `docs/superpowers/specs/2026-07-03-high-temperature-tracker-design.
 3. **Secrets:** in the repo → Settings → Secrets and variables → Actions, add:
    `NETATMO_CLIENT_ID`, `NETATMO_CLIENT_SECRET`, `NETATMO_ENC_PASSPHRASE`,
    `NETATMO_DEVICE_ID`, `NETATMO_MODULE_ID`.
+   `NETATMO_ENC_PASSPHRASE` MUST be randomly generated and high-entropy
+   (e.g. `openssl rand -base64 24`) — the encrypted token file is committed
+   to a public repo, so passphrase strength is the entire security of it.
+   A human-chosen passphrase is brute-forceable offline; a random one is not.
 4. **Pages:** Settings → Pages → Source: **GitHub Actions**.
 5. Trigger both capture workflows once by hand (Actions tab → Run workflow) to
    verify end to end.
