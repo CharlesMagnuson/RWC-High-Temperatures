@@ -9,6 +9,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     passWithNoTests: true,
+    setupFiles: ['tests/setup.ts'],
     // @testing-library/react only auto-registers its afterEach(cleanup) hook
     // when it detects a global `afterEach`; without this, DOM from one test
     // leaks into the next within the same file.

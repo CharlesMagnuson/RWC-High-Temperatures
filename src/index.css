@@ -8,6 +8,7 @@
 
 /* shadcn preset b5K0K3ezx — style lyra, mauve base, red theme, radius 0 */
 :root {
+  color-scheme: light;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0.008 326);
   --card: oklch(1 0 0);
@@ -30,6 +31,7 @@
   --status-ok: #00a63e;
 }
 .dark {
+  color-scheme: dark;
   --background: oklch(0.145 0.008 326);
   --foreground: oklch(0.985 0 0);
   --card: #171118;
