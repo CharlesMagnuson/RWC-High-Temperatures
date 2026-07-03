@@ -1,8 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import App from '../src/App';
 
 describe('App', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    document.documentElement.classList.remove('dark');
+  });
+
   it('renders the dashboard with sample data (empty data file)', () => {
     const { getByText, getAllByText } = render(<App />);
     expect(getByText('HIGH TEMPERATURE')).toBeTruthy();
