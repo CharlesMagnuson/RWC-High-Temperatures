@@ -210,6 +210,13 @@ git commit -m "test: add trimmed WU forecast page fixture"
 
 ### Task 3: WU forecast parser
 
+> **Amendment (post-review):** the shipped parser takes a third required
+> `geocode` argument and selects the daily-forecast response by request URL
+> (`forecast/daily` + geocode, with `%2C` decoded), throwing on conflicting
+> same-geocode values — the blob contains forecasts for other locations, so
+> pure structural first-match can silently pick the wrong station. The code
+> below predates that fix; `scripts/wu-parse.ts` is the source of truth.
+
 **Files:**
 - Create: `scripts/wu-parse.ts`
 - Test: `tests/wu-parse.test.ts`
@@ -727,6 +734,7 @@ import { load, save, upsert } from './data-store';
 import { pacificTodayISO } from './dates';
 
 const URL = 'https://www.wunderground.com/forecast/KCAREDWO201';
+const GEOCODE = '37.471,-122.233'; // KCAREDWO201's location; pins parsing to this station's forecast
 const UA =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
 const ATTEMPTS = 3;
@@ -740,7 +748,7 @@ async function attempt(today: string): Promise<number> {
   const html = await res.text();
   mkdirSync('artifacts', { recursive: true });
   writeFileSync('artifacts/wu-forecast.html', html); // uploaded on failure for diagnosis
-  return extractForecastHigh(html, today);
+  return extractForecastHigh(html, today, GEOCODE);
 }
 
 async function main() {

@@ -34,9 +34,14 @@ tamper-evident. All temperatures are °F; all dates are Pacific (America/Los_Ang
 2. Parse the embedded `<script id="app-root-state">` JSON blob (HTML-entity
    encoded: `&q;` → `"`). WU server-renders its API responses into this blob;
    it survives visual redesigns.
-3. Find the daily-forecast object **structurally** — the object containing both
-   `calendarDayTemperatureMax` and `validTimeLocal` — because the blob's keys
-   are per-request hashes.
+3. Find the daily-forecast responses **structurally** (objects containing both
+   `calendarDayTemperatureMax` and `validTimeLocal` — the blob's keys are
+   per-request hashes), then select by the response's request URL: it must
+   contain `forecast/daily` and the station's geocode (37.471,-122.233).
+   The blob holds forecasts for OTHER locations too (observed: a KSQL airport
+   forecast 12°F colder), so structural match alone can silently pick the
+   wrong one. If same-geocode responses disagree on today's high, fail loudly
+   rather than record either.
 4. Find the index whose `validTimeLocal` date equals today's Pacific date and
    record `calendarDayTemperatureMax` at that index as today's forecasted
    high; error if today is absent. Index 0 must NOT be assumed to be today:
