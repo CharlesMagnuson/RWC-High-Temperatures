@@ -37,9 +37,12 @@ tamper-evident. All temperatures are °F; all dates are Pacific (America/Los_Ang
 3. Find the daily-forecast object **structurally** — the object containing both
    `calendarDayTemperatureMax` and `validTimeLocal` — because the blob's keys
    are per-request hashes.
-4. Verify `validTimeLocal[0]` matches today's Pacific date, then record
-   `calendarDayTemperatureMax[0]` as today's forecasted high.
-   (`temperatureMax[0]` nulls out after the daytime period passes;
+4. Find the index whose `validTimeLocal` date equals today's Pacific date and
+   record `calendarDayTemperatureMax` at that index as today's forecasted
+   high; error if today is absent. Index 0 must NOT be assumed to be today:
+   observed 2026-07-03 00:27 PT, WU's embedded state still listed 07-02 as
+   day zero, so an index-0 assertion would fail at exactly our capture time.
+   (`temperatureMax` nulls out after a day's daytime period passes;
    calendar-day does not. Validated against the live page 2026-07-02:
    forecast high 75°F.)
 5. On fetch or parse failure: retry 3× over ~30 minutes, then fail the workflow.

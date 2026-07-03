@@ -221,21 +221,26 @@ import { readFileSync } from 'node:fs';
 import { describe, it, expect } from 'vitest';
 import { extractForecastHigh } from '../scripts/wu-parse';
 
-const FIXTURE_DATE = '2026-07-03'; // <- from Task 2 Step 2
-const FIXTURE_MAX = 75;            // <- from Task 2 Step 2
+// Fixture captured 2026-07-03 00:27 PT; WU had not rolled its day-0 bucket,
+// so day 0 is 07-02 (75°F) and day 1 is 07-03 (77°F). That lag is exactly why
+// the parser looks the date up instead of assuming index 0.
 const html = readFileSync('tests/fixtures/wu-app-root-state.html', 'utf8');
 
 describe('extractForecastHigh', () => {
-  it('extracts the calendar-day high for the expected date', () => {
-    expect(extractForecastHigh(html, FIXTURE_DATE)).toBe(FIXTURE_MAX);
+  it('extracts the high at index 0 when today is day 0', () => {
+    expect(extractForecastHigh(html, '2026-07-02')).toBe(75);
   });
 
-  it('throws when the date does not match', () => {
-    expect(() => extractForecastHigh(html, '1999-01-01')).toThrow(/date/);
+  it('finds today at a later index when WU has not rolled over', () => {
+    expect(extractForecastHigh(html, '2026-07-03')).toBe(77);
+  });
+
+  it('throws when today is not in the forecast window', () => {
+    expect(() => extractForecastHigh(html, '1999-01-01')).toThrow(/not found in forecast/);
   });
 
   it('throws when the state tag is missing', () => {
-    expect(() => extractForecastHigh('<html></html>', FIXTURE_DATE)).toThrow(/app-root-state/);
+    expect(() => extractForecastHigh('<html></html>', '2026-07-02')).toThrow(/app-root-state/);
   });
 });
 ```
@@ -273,6 +278,8 @@ function findDaily(obj: unknown): DailyForecast | null {
  * WU server-renders its API responses into <script id="app-root-state"> with
  * HTML-entity encoding (&q; for quotes). Keys are per-request hashes, so the
  * daily-forecast object is found structurally. `&a;` must be decoded last.
+ * Today's entry is looked up by date, NOT assumed to be index 0 — shortly
+ * after midnight WU's state can still list yesterday as day zero.
  */
 export function extractForecastHigh(html: string, todayISO: string): number {
   const m = html.match(/<script id="app-root-state"[^>]*>([\s\S]*?)<\/script>/);
@@ -286,11 +293,13 @@ export function extractForecastHigh(html: string, todayISO: string): number {
   const state = JSON.parse(json);
   const daily = findDaily(state);
   if (!daily) throw new Error('daily forecast object not found in app-root-state');
-  const date0 = daily.validTimeLocal[0]?.slice(0, 10);
-  if (date0 !== todayISO) throw new Error(`forecast date ${date0} does not match today ${todayISO}`);
-  const max0 = daily.calendarDayTemperatureMax[0];
-  if (typeof max0 !== 'number') throw new Error('calendarDayTemperatureMax[0] is not a number');
-  return max0;
+  const idx = daily.validTimeLocal.findIndex((t) => t?.slice(0, 10) === todayISO);
+  if (idx === -1) {
+    throw new Error(`today ${todayISO} not found in forecast window starting ${daily.validTimeLocal[0]}`);
+  }
+  const max = daily.calendarDayTemperatureMax[idx];
+  if (typeof max !== 'number') throw new Error(`calendarDayTemperatureMax[${idx}] is not a number`);
+  return max;
 }
 ```
 
