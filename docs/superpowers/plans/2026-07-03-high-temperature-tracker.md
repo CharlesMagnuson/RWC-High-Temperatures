@@ -179,7 +179,9 @@ require('fs').writeFileSync('tests/fixtures/wu-app-root-state.html', '<html><bod
 "
 ls -la tests/fixtures/wu-app-root-state.html
 ```
-Expected: fixture file of roughly 100–600 KB.
+Expected: fixture file of roughly 100–600 KB. (Observed in practice: ~1.6 MB —
+WU's blob carries unrelated widget data for other cities plus ad config; the
+structural search legitimately walks past it. Not a trimming bug.)
 
 - [ ] **Step 2: Record today's expected value for the test**
 
