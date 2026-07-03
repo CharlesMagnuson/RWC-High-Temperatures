@@ -1,1 +1,72 @@
 @import 'tailwindcss';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+@import '@fontsource/jetbrains-mono/600.css';
+@import '@fontsource/jetbrains-mono/700.css';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* shadcn preset b5K0K3ezx — style lyra, mauve base, red theme, radius 0 */
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0.008 326);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0.008 326);
+  --primary: oklch(0.505 0.213 27.518);
+  --primary-foreground: oklch(0.971 0.013 17.38);
+  --muted: oklch(0.96 0.003 325.6);
+  --muted-foreground: oklch(0.542 0.034 322.5);
+  --border: oklch(0.922 0.005 325.62);
+  --radius: 0;
+  /* chart chrome (design spec) */
+  --grid: #f0edf0;
+  --axis: #dbd6db;
+  --faint: #a89ea9;
+  --inv-bg: #0c090c;
+  --inv-fg: #fafafa;
+  --neutral-mark: #b5aeb6;
+  --month-line: rgba(12, 9, 12, 0.18);
+  --week-line: rgba(12, 9, 12, 0.07);
+  --status-ok: #00a63e;
+}
+.dark {
+  --background: oklch(0.145 0.008 326);
+  --foreground: oklch(0.985 0 0);
+  --card: #171118;
+  --card-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.704 0.191 22.216);
+  --primary-foreground: oklch(0.971 0.013 17.38);
+  --muted: oklch(0.263 0.024 320.12);
+  --muted-foreground: oklch(0.711 0.019 323.02);
+  --border: oklch(1 0 0 / 10%);
+  --grid: rgba(255, 255, 255, 0.06);
+  --axis: rgba(255, 255, 255, 0.16);
+  --faint: #6b5f6d;
+  --inv-bg: #fafafa;
+  --inv-fg: #0c090c;
+  --neutral-mark: #5c525e;
+  --month-line: rgba(255, 255, 255, 0.15);
+  --week-line: rgba(255, 255, 255, 0.06);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-faint: var(--faint);
+  --color-inv-bg: var(--inv-bg);
+  --color-inv-fg: var(--inv-fg);
+  --font-sans: 'JetBrains Mono', ui-monospace, monospace;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --radius: 0;
+}
+
+body {
+  @apply bg-background text-foreground font-mono antialiased;
+}
