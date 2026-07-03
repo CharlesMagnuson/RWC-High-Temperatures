@@ -1,0 +1,54 @@
+name: Backfill actual
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date to backfill (YYYY-MM-DD, Pacific)'
+        required: true
+
+concurrency:
+  group: data-commits
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/capture-actual.ts "$BACKFILL_DATE"
+        env:
+          BACKFILL_DATE: ${{ inputs.date }}
+          NETATMO_CLIENT_ID: ${{ secrets.NETATMO_CLIENT_ID }}
+          NETATMO_CLIENT_SECRET: ${{ secrets.NETATMO_CLIENT_SECRET }}
+          NETATMO_ENC_PASSPHRASE: ${{ secrets.NETATMO_ENC_PASSPHRASE }}
+          NETATMO_DEVICE_ID: ${{ secrets.NETATMO_DEVICE_ID }}
+          NETATMO_MODULE_ID: ${{ secrets.NETATMO_MODULE_ID }}
+      - name: Commit rotated token even on failure
+        if: always()
+        run: |
+          git config user.name "temperature-bot"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add secrets/netatmo-tokens.enc
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: rotate netatmo token"
+          git pull --rebase
+          git push
+      - name: Commit data
+        env:
+          BACKFILL_DATE: ${{ inputs.date }}
+        run: |
+          git config user.name "temperature-bot"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add data/temperatures.json
+          git diff --cached --quiet && exit 0
+          git commit -m "data: backfill actual $BACKFILL_DATE"
+          git pull --rebase
+          git push
