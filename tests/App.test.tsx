@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import App from '../src/App';
 
@@ -28,5 +28,25 @@ describe('App', () => {
     const { getByLabelText } = render(<App />);
     fireEvent.click(getByLabelText('Toggle theme'));
     expect(document.documentElement.classList.contains('dark')).toBe(true);
+  });
+
+  describe('status freshness', () => {
+    // Pin only Date (not timers) so React scheduling is untouched. The sample
+    // data's newest record is 2026-07-02; the fresh window is < 3 days.
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('shows LATEST with a record inside the 3-day window', () => {
+      vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-07-03T12:00:00Z') });
+      const { getByText } = render(<App />);
+      expect(getByText('LATEST · JUL 02')).toBeTruthy();
+    });
+
+    it('shows STALE once the newest record is 3+ days old', () => {
+      vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-07-10T12:00:00Z') });
+      const { getByText } = render(<App />);
+      expect(getByText('STALE · JUL 02')).toBeTruthy();
+    });
   });
 });

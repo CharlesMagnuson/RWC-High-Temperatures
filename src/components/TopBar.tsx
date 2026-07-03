@@ -1,13 +1,22 @@
 import { MoonStars, Sun } from '@phosphor-icons/react';
 import type { Mode } from '../lib/colors';
+import { fmtDay } from '../lib/display-dates';
 
 interface Props {
   mode: Mode;
   onToggle: () => void;
-  lastCapture: string | null; // e.g. "JUL 02" of the newest record
+  lastDate: string | null; // YYYY-MM-DD of the newest record
 }
 
-export function TopBar({ mode, onToggle, lastCapture }: Props) {
+const FRESH_MS = 3 * 86_400_000;
+
+export function TopBar({ mode, onToggle, lastDate }: Props) {
+  const fresh =
+    lastDate !== null && Date.now() - Date.parse(`${lastDate}T00:00:00Z`) < FRESH_MS;
+  const status =
+    lastDate === null
+      ? 'AWAITING FIRST CAPTURE'
+      : `${fresh ? 'LATEST' : 'STALE'} · ${fmtDay(lastDate).md}`;
   return (
     <div className="flex items-center justify-between border-b border-border px-7 py-4">
       <div className="flex items-center gap-3">
@@ -19,8 +28,11 @@ export function TopBar({ mode, onToggle, lastCapture }: Props) {
       </div>
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2 text-[10px] tracking-[0.12em] text-muted-foreground">
-          <span className="h-[7px] w-[7px] rounded-full" style={{ background: 'var(--status-ok)' }} />
-          {lastCapture ? `LATEST · ${lastCapture}` : 'AWAITING FIRST CAPTURE'}
+          <span
+            className="h-[7px] w-[7px] rounded-full"
+            style={{ background: fresh ? 'var(--status-ok)' : 'var(--neutral-mark)' }}
+          />
+          {status}
         </div>
         <button
           onClick={onToggle}
