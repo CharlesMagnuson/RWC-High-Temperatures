@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "date": "2026-07-03",
+    "forecast_high_f": 78,
+    "actual_high_f": null,
+    "forecast_captured_at": "2026-07-03T16:42:07.754Z",
+    "actual_captured_at": null
+  }
+]
