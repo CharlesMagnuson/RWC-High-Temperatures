@@ -10,7 +10,7 @@ import { sliceView, meanDelta, type DayRecord, type View } from './lib/records';
 import { fmtDay } from './lib/display-dates';
 import { cn } from './lib/utils';
 
-const VIEWS: View[] = ['week', 'month', 'year'];
+const VIEWS: View[] = ['week', 'month', 'year', 'spring', 'summer', 'fall', 'winter'];
 
 export default function App() {
   const [mode, toggleMode] = useThemeMode();
@@ -71,10 +71,6 @@ export default function App() {
         <Card className="mt-5">
           <DataTable records={records} mode={mode} />
         </Card>
-        <div className="flex justify-between px-1 py-4 text-[9px] tracking-[0.12em] text-faint">
-          <span>SRC · WUNDERGROUND/KCAREDWO201 · NETATMO STATION</span>
-          <span>UPDATED 2× DAILY</span>
-        </div>
       </main>
     </div>
   );

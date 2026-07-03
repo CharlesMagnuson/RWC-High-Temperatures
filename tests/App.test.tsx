@@ -31,6 +31,16 @@ describe('App', () => {
     expect(getByText(/HOVER A DAY/)).toBeTruthy();
   });
 
+  it('switches to a season view', () => {
+    const { getByText, getAllByText } = render(<App />);
+    // sample data spans Jun 4 – Jul 2 2026, entirely inside summer
+    fireEvent.click(getByText('SUMMER'));
+    expect(getAllByText(/°F/).length).toBeGreaterThan(0);
+    // a season with no records still renders the empty chart region
+    fireEvent.click(getByText('SPRING'));
+    expect(getByText(/HOVER A DAY/)).toBeTruthy();
+  });
+
   it('toggles theme', () => {
     const { getByLabelText } = render(<App />);
     fireEvent.click(getByLabelText('Toggle theme'));
