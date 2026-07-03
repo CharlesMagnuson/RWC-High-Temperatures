@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { decrypt, encrypt } from './crypto';
 import { refreshTokens, getMaxTempF, type Tokens } from './netatmo';
@@ -28,10 +28,14 @@ async function main() {
     env('NETATMO_CLIENT_SECRET'),
     stored.refresh_token,
   );
-  writeFileSync(TOKEN_PATH, encrypt(JSON.stringify(tokens), passphrase));
+  // Atomic write: never leave a truncated token file if the process dies mid-write.
+  writeFileSync(TOKEN_PATH + '.tmp', encrypt(JSON.stringify(tokens), passphrase));
+  renameSync(TOKEN_PATH + '.tmp', TOKEN_PATH);
 
   const begin = pacificMidnightEpoch(date);
-  const end = dateArg ? begin + 86400 : Math.floor(Date.now() / 1000);
+  // Backfill window ends at the next Pacific midnight (exact across DST transitions).
+  const nextDay = new Date(Date.parse(date + 'T12:00:00Z') + 86_400_000).toISOString().slice(0, 10);
+  const end = dateArg ? pacificMidnightEpoch(nextDay) : Math.floor(Date.now() / 1000);
   const high = await getMaxTempF(
     tokens.access_token,
     env('NETATMO_DEVICE_ID'),

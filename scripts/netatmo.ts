@@ -26,11 +26,16 @@ export async function refreshTokens(
       client_id: clientId,
       client_secret: clientSecret,
     }),
+    signal: AbortSignal.timeout(10_000),
   });
   await expectOk(res, 'token refresh');
   const json = (await res.json()) as Partial<Tokens>;
   if (typeof json.access_token !== 'string' || typeof json.refresh_token !== 'string') {
-    throw new Error(`Netatmo token refresh: malformed response (missing tokens): ${JSON.stringify(json)}`);
+    // Deliberately not echoing the body: a partial response could contain a live token.
+    const bad = (['access_token', 'refresh_token'] as const)
+      .filter((k) => typeof json[k] !== 'string')
+      .join('/');
+    throw new Error(`Netatmo token refresh: malformed response (missing or non-string: ${bad})`);
   }
   return { access_token: json.access_token, refresh_token: json.refresh_token };
 }
@@ -54,6 +59,7 @@ export async function getMaxTempF(
   });
   const res = await fetch(`${API}/api/getmeasure?${params}`, {
     headers: { Authorization: `Bearer ${accessToken}` },
+    signal: AbortSignal.timeout(10_000),
   });
   await expectOk(res, 'getmeasure');
   const json = (await res.json()) as { body?: Record<string, (number | null)[]> };
@@ -70,6 +76,7 @@ export async function getMaxTempF(
 export async function getStations(accessToken: string): Promise<unknown> {
   const res = await fetch(`${API}/api/getstationsdata`, {
     headers: { Authorization: `Bearer ${accessToken}` },
+    signal: AbortSignal.timeout(10_000),
   });
   await expectOk(res, 'getstationsdata');
   return res.json();
