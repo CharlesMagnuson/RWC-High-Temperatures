@@ -54,5 +54,5 @@ jobs:
           git add data/temperatures.json
           git diff --cached --quiet && exit 0
           git commit -m "data: forecast $(TZ=America/Los_Angeles date +%F)"
-          git pull --rebase
+          git pull --rebase --autostash
           git push

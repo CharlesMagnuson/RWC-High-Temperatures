@@ -39,7 +39,7 @@ jobs:
           git add secrets/netatmo-tokens.enc
           git diff --cached --quiet && exit 0
           git commit -m "chore: rotate netatmo token"
-          git pull --rebase
+          git pull --rebase --autostash
           git push
       - name: Commit data
         env:
@@ -50,5 +50,5 @@ jobs:
           git add data/temperatures.json
           git diff --cached --quiet && exit 0
           git commit -m "data: backfill actual $BACKFILL_DATE"
-          git pull --rebase
+          git pull --rebase --autostash
           git push
