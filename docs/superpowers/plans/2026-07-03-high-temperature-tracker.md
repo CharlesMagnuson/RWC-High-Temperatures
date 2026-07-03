@@ -809,7 +809,7 @@ jobs:
         id: guard
         run: |
           H=$(TZ=America/Los_Angeles date +%H)
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$H" != "00" ]; then
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$H" != "00" ] && [ "$H" != "01" ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "Skipping: Pacific hour is $H"
           fi
@@ -838,8 +838,8 @@ jobs:
           git config user.email "github-actions@users.noreply.github.com"
           git add data/temperatures.json
           git diff --cached --quiet && exit 0
-          git pull --rebase
           git commit -m "data: forecast $(TZ=America/Los_Angeles date +%F)"
+          git pull --rebase
           git push
 ```
 
@@ -951,7 +951,7 @@ jobs:
         id: guard
         run: |
           H=$(TZ=America/Los_Angeles date +%H)
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$H" != "18" ]; then
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$H" != "18" ] && [ "$H" != "19" ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "Skipping: Pacific hour is $H"
           fi
@@ -979,8 +979,8 @@ jobs:
           git config user.email "github-actions@users.noreply.github.com"
           git add data/temperatures.json secrets/netatmo-tokens.enc
           git diff --cached --quiet && exit 0
-          git pull --rebase
           git commit -m "data: actual $(TZ=America/Los_Angeles date +%F)"
+          git pull --rebase
           git push
 ```
 
@@ -1024,8 +1024,8 @@ jobs:
           git config user.email "github-actions@users.noreply.github.com"
           git add data/temperatures.json secrets/netatmo-tokens.enc
           git diff --cached --quiet && exit 0
-          git pull --rebase
           git commit -m "data: backfill actual ${{ inputs.date }}"
+          git pull --rebase
           git push
 ```
 
