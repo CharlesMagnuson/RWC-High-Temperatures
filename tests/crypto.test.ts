@@ -15,4 +15,15 @@ describe('crypto round trip', () => {
     const payload = encrypt('secret', 'right');
     expect(() => decrypt(payload, 'wrong')).toThrow();
   });
+
+  it('detects tampering with the ciphertext', () => {
+    const payload = encrypt('secret', 'p');
+    const buf = Buffer.from(payload, 'base64');
+    buf[44] ^= 0xff; // flip one byte in the ciphertext region
+    expect(() => decrypt(buf.toString('base64'), 'p')).toThrow();
+  });
+
+  it('rejects malformed payloads that are too short', () => {
+    expect(() => decrypt('AAAA', 'p')).toThrow(/too short/);
+  });
 });
