@@ -1,0 +1,53 @@
+name: Capture forecast
+on:
+  schedule:
+    - cron: '5 7 * * *'
+    - cron: '5 8 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: data-commits
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: DST guard (run only at 00:xx Pacific)
+        id: guard
+        run: |
+          H=$(TZ=America/Los_Angeles date +%H)
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$H" != "00" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Skipping: Pacific hour is $H"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.guard.outputs.skip != 'true'
+      - uses: actions/setup-node@v4
+        if: steps.guard.outputs.skip != 'true'
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+        if: steps.guard.outputs.skip != 'true'
+      - run: npm run capture:forecast
+        if: steps.guard.outputs.skip != 'true'
+      - name: Upload raw page on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wu-forecast-html
+          path: artifacts/wu-forecast.html
+          retention-days: 7
+      - name: Commit data
+        if: success() && steps.guard.outputs.skip != 'true'
+        run: |
+          git config user.name "temperature-bot"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add data/temperatures.json
+          git diff --cached --quiet && exit 0
+          git pull --rebase
+          git commit -m "data: forecast $(TZ=America/Los_Angeles date +%F)"
+          git push
