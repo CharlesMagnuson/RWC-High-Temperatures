@@ -832,7 +832,7 @@ jobs:
           path: artifacts/wu-forecast.html
           retention-days: 7
       - name: Commit data
-        if: steps.guard.outputs.skip != 'true'
+        if: success() && steps.guard.outputs.skip != 'true'
         run: |
           git config user.name "temperature-bot"
           git config user.email "github-actions@users.noreply.github.com"
@@ -973,7 +973,7 @@ jobs:
           NETATMO_DEVICE_ID: ${{ secrets.NETATMO_DEVICE_ID }}
           NETATMO_MODULE_ID: ${{ secrets.NETATMO_MODULE_ID }}
       - name: Commit data and rotated token
-        if: steps.guard.outputs.skip != 'true'
+        if: success() && steps.guard.outputs.skip != 'true'
         run: |
           git config user.name "temperature-bot"
           git config user.email "github-actions@users.noreply.github.com"
