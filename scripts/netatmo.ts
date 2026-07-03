@@ -28,7 +28,10 @@ export async function refreshTokens(
     }),
   });
   await expectOk(res, 'token refresh');
-  const json = (await res.json()) as Tokens;
+  const json = (await res.json()) as Partial<Tokens>;
+  if (typeof json.access_token !== 'string' || typeof json.refresh_token !== 'string') {
+    throw new Error(`Netatmo token refresh: malformed response (missing tokens): ${JSON.stringify(json)}`);
+  }
   return { access_token: json.access_token, refresh_token: json.refresh_token };
 }
 
@@ -53,7 +56,8 @@ export async function getMaxTempF(
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   await expectOk(res, 'getmeasure');
-  const json = (await res.json()) as { body: Record<string, (number | null)[]> };
+  const json = (await res.json()) as { body?: Record<string, (number | null)[]> };
+  if (!json.body) throw new Error(`Netatmo getmeasure: no body in response: ${JSON.stringify(json)}`);
   const values = Object.values(json.body)
     .map((v) => v[0])
     .filter((v): v is number => typeof v === 'number');
