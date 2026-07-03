@@ -22,7 +22,7 @@ export function TopBar({ mode, onToggle, lastDate }: Props) {
       <div className="flex items-center gap-3">
         <div className="h-3.5 w-3.5 bg-primary" />
         <div>
-          <h1 className="text-sm font-bold tracking-[0.18em]">HIGH TEMPERATURE</h1>
+          <h1 className="text-sm font-bold tracking-[0.18em]">HIGH TEMPERATURES</h1>
           <div className="mt-0.5 text-[11px] tracking-[0.08em] text-muted-foreground">REDWOOD CITY, CA</div>
         </div>
       </div>

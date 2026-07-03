@@ -17,7 +17,7 @@ describe('App', () => {
 
   it('renders the dashboard with sample data (empty data file)', () => {
     const { getByText, getAllByText } = render(<App />);
-    expect(getByText('HIGH TEMPERATURE')).toBeTruthy();
+    expect(getByText('HIGH TEMPERATURES')).toBeTruthy();
     expect(getByText('Forecast vs Actual')).toBeTruthy();
     expect(getByText('WEEK')).toBeTruthy();
     // sample data means the table has rows with °F values
