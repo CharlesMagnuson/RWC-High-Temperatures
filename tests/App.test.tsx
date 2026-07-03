@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
+
+// Pin the data import to an empty file so these tests always exercise the
+// deterministic sample-data fallback. Without this, the suite breaks in CI
+// the moment the capture workflows commit real records (App imports the
+// live data/temperatures.json at build time).
+vi.mock('../data/temperatures.json', () => ({ default: [] }));
+
 import App from '../src/App';
 
 describe('App', () => {
