@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import rawRecords from '../data/temperatures.json';
 import { Card } from './components/ui/card';
 import { DumbbellChart } from './components/DumbbellChart';
@@ -52,17 +52,19 @@ export default function App() {
             </div>
             <div className="flex border border-border">
               {VIEWS.map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setView(v)}
-                  aria-pressed={v === view}
-                  className={cn(
-                    'px-4.5 py-2 text-[11px] font-semibold tracking-[0.14em]',
-                    v === view ? 'bg-inv-bg text-inv-fg' : 'text-muted-foreground',
-                  )}
-                >
-                  {v.toUpperCase()}
-                </button>
+                <Fragment key={v}>
+                  {v === 'spring' && <div aria-hidden className="w-px self-stretch bg-border" />}
+                  <button
+                    onClick={() => setView(v)}
+                    aria-pressed={v === view}
+                    className={cn(
+                      'px-4.5 py-2 text-[11px] font-semibold tracking-[0.14em]',
+                      v === view ? 'bg-inv-bg text-inv-fg' : 'text-muted-foreground',
+                    )}
+                  >
+                    {v.toUpperCase()}
+                  </button>
+                </Fragment>
               ))}
             </div>
           </div>
