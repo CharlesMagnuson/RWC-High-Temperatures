@@ -11,7 +11,9 @@ export interface DayRecord {
 export const DATA_PATH = 'data/temperatures.json';
 
 export function load(path = DATA_PATH): DayRecord[] {
-  return JSON.parse(readFileSync(path, 'utf8'));
+  const parsed = JSON.parse(readFileSync(path, 'utf8'));
+  if (!Array.isArray(parsed)) throw new Error(`${path} does not contain a JSON array`);
+  return parsed;
 }
 
 export function save(records: DayRecord[], path = DATA_PATH): void {
