@@ -1,13 +1,11 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
 import { createInterface } from 'node:readline/promises';
 import { encrypt } from './crypto';
-import { refreshTokens, getStations } from './netatmo';
-
-const TOKEN_PATH = 'secrets/netatmo-tokens.enc';
+import { TOKEN_PATH, refreshTokens, getStations } from './netatmo';
 
 interface StationsResponse {
-  body: {
-    devices: {
+  body?: {
+    devices?: {
       _id: string;
       station_name: string;
       modules: { _id: string; module_name: string; type: string }[];
@@ -28,10 +26,25 @@ async function main() {
 
   // Validate by refreshing (this also rotates the token — we store the new one).
   const tokens = await refreshTokens(clientId, clientSecret, refreshToken);
-  console.log('\nToken refresh OK.');
+
+  // Persist immediately: the refresh consumed the pasted token, so any failure
+  // below must not lose the rotated one. Atomic write, as in capture-actual.
+  mkdirSync('secrets', { recursive: true });
+  writeFileSync(TOKEN_PATH + '.tmp', encrypt(JSON.stringify(tokens), passphrase));
+  renameSync(TOKEN_PATH + '.tmp', TOKEN_PATH);
+  console.log(`\nToken refresh OK — encrypted token saved to ${TOKEN_PATH}.`);
 
   const stations = (await getStations(tokens.access_token)) as StationsResponse;
-  for (const dev of stations.body.devices) {
+  const devices = stations?.body?.devices;
+  if (!devices) throw new Error('getstationsdata returned no device list');
+  if (devices.length === 0) {
+    console.error(
+      'No stations found — check that your token has read_station scope and your account owns a station',
+    );
+    console.error(`(The encrypted token file was already saved to ${TOKEN_PATH}.)`);
+    process.exit(1);
+  }
+  for (const dev of devices) {
     console.log(`\nStation "${dev.station_name}"  NETATMO_DEVICE_ID=${dev._id}`);
     for (const mod of dev.modules) {
       const hint = mod.type === 'NAModule1' ? '  <-- outdoor module' : '';
@@ -39,13 +52,23 @@ async function main() {
     }
   }
 
-  mkdirSync('secrets', { recursive: true });
-  writeFileSync(TOKEN_PATH, encrypt(JSON.stringify(tokens), passphrase));
-  console.log(`\nWrote ${TOKEN_PATH} — commit this file.`);
-  console.log('Add the five NETATMO_* values above as GitHub Actions secrets.');
+  console.log(`\nCommit ${TOKEN_PATH}.`);
+  console.log(
+    'Add these GitHub Actions secrets: NETATMO_CLIENT_ID and NETATMO_CLIENT_SECRET (as entered), ' +
+      'NETATMO_ENC_PASSPHRASE (your passphrase), and the NETATMO_DEVICE_ID / NETATMO_MODULE_ID printed above.',
+  );
 }
 
 main().catch((err) => {
   console.error(err);
+  const msg = err instanceof Error ? err.message : String(err);
+  if (/invalid_client/.test(msg)) {
+    console.error('→ check your Client ID / Client secret');
+  }
+  if (/invalid_grant/.test(msg)) {
+    console.error(
+      '→ your refresh token is invalid or already consumed — generate a fresh one in the dev portal (each token works exactly once here)',
+    );
+  }
   process.exit(1);
 });

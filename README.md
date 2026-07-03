@@ -17,6 +17,7 @@ Design spec: `docs/superpowers/specs/2026-07-03-high-temperature-tracker-design.
 
 ## One-time setup
 
+0. Prerequisites: Node ≥ 22, then `npm install`.
 1. Create a GitHub repository and push this code to `main`.
 2. **Netatmo:** create an app at https://dev.netatmo.com (or reuse one), then run
    `npm run netatmo:auth` locally. It prints your device/module ids and writes
@@ -33,6 +34,10 @@ Design spec: `docs/superpowers/specs/2026-07-03-high-temperature-tracker-design.
 4. **Pages:** Settings → Pages → Source: **GitHub Actions**.
 5. Trigger both capture workflows once by hand (Actions tab → Run workflow) to
    verify end to end.
+
+If a scheduled `capture-actual` run fires between pushing the code (step 1) and
+finishing steps 2–3, it fails and emails you — that is expected; it resolves
+itself once the token file and secrets are in place.
 
 Workflow failures email you via GitHub's default notifications. A missed
 forecast is gone forever; a missed actual is repairable via the

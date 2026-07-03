@@ -1,5 +1,8 @@
 const API = 'https://api.netatmo.com';
 
+/** Encrypted token file, shared by the auth helper (writer) and capture-actual (reader/rotator). */
+export const TOKEN_PATH = 'secrets/netatmo-tokens.enc';
+
 export interface Tokens {
   access_token: string;
   refresh_token: string;

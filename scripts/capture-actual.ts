@@ -1,11 +1,9 @@
 import { readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { decrypt, encrypt } from './crypto';
-import { refreshTokens, getMaxTempF, type Tokens } from './netatmo';
+import { TOKEN_PATH, refreshTokens, getMaxTempF, type Tokens } from './netatmo';
 import { load, save, upsert } from './data-store';
 import { pacificTodayISO, pacificMidnightEpoch } from './dates';
-
-export const TOKEN_PATH = 'secrets/netatmo-tokens.enc';
 
 function env(name: string): string {
   const v = process.env[name];
