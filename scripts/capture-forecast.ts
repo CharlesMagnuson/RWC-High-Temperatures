@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { extractForecastHigh } from './wu-parse';
-import { load, save, upsert } from './data-store';
+import { load, save, upsert, type DayRecord } from './data-store';
 import { pacificTodayISO } from './dates';
 
 const URL = 'https://www.wunderground.com/forecast/KCAREDWO201';
@@ -11,6 +12,15 @@ const ATTEMPTS = 3;
 const RETRY_DELAY_MS = 10 * 60 * 1000;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * True when today's forecast is already captured, so a second run (the widened
+ * 00/01 Pacific guard window fires both crons under PDT) is a no-op. First
+ * capture of the night wins.
+ */
+export function shouldSkip(records: DayRecord[], today: string): boolean {
+  return typeof records.find((r) => r.date === today)?.forecast_high_f === 'number';
+}
 
 async function attempt(today: string): Promise<number> {
   const res = await fetch(URL, { headers: { 'User-Agent': UA } });
@@ -23,6 +33,12 @@ async function attempt(today: string): Promise<number> {
 
 async function main() {
   const today = pacificTodayISO();
+  const records = load();
+  if (shouldSkip(records, today)) {
+    const existing = records.find((r) => r.date === today)!.forecast_high_f;
+    console.log(`forecast ${today}: already captured (${existing}°F), skipping`);
+    return;
+  }
   let lastError: unknown;
   for (let i = 1; i <= ATTEMPTS; i++) {
     try {
@@ -42,7 +58,11 @@ async function main() {
   throw lastError;
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Run only when executed directly (tsx scripts/capture-forecast.ts), not when
+// imported by tests for the exported helpers.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
