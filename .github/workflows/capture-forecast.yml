@@ -28,9 +28,9 @@ jobs:
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "Skipping: Pacific hour is $H"
           fi
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         if: steps.guard.outputs.skip != 'true'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         if: steps.guard.outputs.skip != 'true'
         with:
           node-version: 22
@@ -41,7 +41,7 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
       - name: Upload raw page on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wu-forecast-html
           path: artifacts/wu-forecast.html
