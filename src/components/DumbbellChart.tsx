@@ -46,6 +46,7 @@ export function DumbbellChart({ records, mode }: Props) {
   const readout = (() => {
     if (hover === null) return null;
     const rec = records[hover];
+    if (!rec) return null; // hover index can go stale when records shrink (year -> week)
     const { w, md } = fmtDay(rec.date);
     const d = deltaOf(rec);
     const fmt = (v: number | null) => (v === null ? '—' : `${v}°`);
@@ -59,11 +60,11 @@ export function DumbbellChart({ records, mode }: Props) {
     <div className="relative px-6 pt-2 pb-1" data-chart-zone onMouseLeave={() => setHover(null)}>
       <div
         data-testid="readout"
-        className="absolute right-6 top-3 min-h-4 text-right text-[11px] font-medium tracking-[0.08em]"
+        className="pointer-events-none absolute right-6 top-3 min-h-4 text-right text-[11px] font-medium tracking-[0.08em]"
       >
         {readout ?? <span className="text-faint">HOVER A DAY</span>}
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" aria-label="Forecast vs actual daily highs">
+      <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" role="img" aria-label="Forecast vs actual daily highs">
         {gridTemps.map((t) => (
           <g key={t}>
             <line x1={PAD.l} y1={y(t)} x2={W - PAD.r} y2={y(t)} stroke="var(--grid)" strokeWidth="1" />
@@ -121,18 +122,20 @@ export function DumbbellChart({ records, mode }: Props) {
             </g>
           );
         })}
-        {records.map((rec, i) =>
-          labelEvery(i) ? (
+        {records.map((rec, i) => {
+          if (!labelEvery(i)) return null;
+          const { w, md } = fmtDay(rec.date);
+          return (
             <g key={rec.date}>
               <text x={cx(i)} y={H - 22} textAnchor="middle" fontSize="9" fill="var(--muted-foreground)" letterSpacing="1">
-                {fmtDay(rec.date).w}
+                {w}
               </text>
               <text x={cx(i)} y={H - 9} textAnchor="middle" fontSize="9" fill="var(--faint)">
-                {fmtDay(rec.date).md.slice(4)}
+                {n > 100 ? md.slice(0, 3) : md.slice(4)}
               </text>
             </g>
-          ) : null,
-        )}
+          );
+        })}
         {records.map((rec, i) => (
           <rect key={rec.date} data-hit x={cx(i) - slot / 2} y={PAD.t} width={slot} height={H - PAD.t - PAD.b}
             fill="transparent" onMouseEnter={() => setHover(i)} />
