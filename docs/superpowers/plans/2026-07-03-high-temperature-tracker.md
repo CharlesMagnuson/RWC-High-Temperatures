@@ -1578,7 +1578,7 @@ Expected: FAIL — component not found.
 ```tsx
 import { useState } from 'react';
 import { colorOf, ARMS, type Mode } from '../lib/colors';
-import { isMonday, monthOf, fmtDay } from '../lib/display-dates';
+import { weekOf, monthOf, fmtDay } from '../lib/display-dates';
 import { deltaOf, type DayRecord } from '../lib/records';
 
 interface Props {
@@ -1616,7 +1616,10 @@ export function DumbbellChart({ records, mode }: Props) {
 
   // Thin x labels: every day ≤ 31 records, else Mondays only, else month starts.
   const labelEvery = (i: number) =>
-    n <= 31 || (n <= 100 ? isMonday(records[i].date) : records[i].date.endsWith('-01'));
+    n <= 31 ||
+    (n <= 100
+      ? i === 0 || weekOf(records[i - 1].date) !== weekOf(records[i].date)
+      : i === 0 || monthOf(records[i - 1].date) !== monthOf(records[i].date));
 
   const readout = (() => {
     if (hover === null) return null;
@@ -1656,7 +1659,8 @@ export function DumbbellChart({ records, mode }: Props) {
                 stroke="var(--month-line)" strokeWidth="1" />
             );
           }
-          if (isMonday(rec.date)) {
+          {/* weekOf comparison (not isMonday) so a missing Monday still draws the rule */}
+          if (weekOf(records[i - 1].date) !== weekOf(rec.date)) {
             return (
               <line key={rec.date} data-sep="week" x1={bx} y1={PAD.t} x2={bx} y2={H - PAD.b}
                 stroke="var(--week-line)" strokeWidth="1" />
@@ -1766,7 +1770,7 @@ git commit -m "feat: dumbbell chart with diverging bins, readout, and time divid
 
 ```tsx
 import { colorOf, inkFor, type Mode } from '../lib/colors';
-import { isMonday, fmtDay } from '../lib/display-dates';
+import { weekOf, fmtDay } from '../lib/display-dates';
 import { deltaOf, type DayRecord } from '../lib/records';
 import { cn } from '../lib/utils';
 
@@ -1784,15 +1788,18 @@ export function DataTable({ records, mode }: { records: DayRecord[]; mode: Mode 
         </tr>
       </thead>
       <tbody>
-        {rows.map((r) => {
+        {rows.map((r, idx) => {
           const d = deltaOf(r);
           const color = d === null ? null : colorOf(d, mode);
           const { w, md } = fmtDay(r.date);
           const year = r.date.slice(0, 4);
           const fmt = (v: number | null) => (v === null ? '—' : `${v}°F`);
-          // Newest-first: the divider under a Monday row separates it from the previous week's Sunday.
+          // Newest-first: a divider under the last row of each week (weekOf changes
+          // between this row and the older row below), robust to missing days.
+          const older = rows[idx + 1];
+          const weekEdge = older !== undefined && weekOf(r.date) !== weekOf(older.date);
           return (
-            <tr key={r.date} className={isMonday(r.date) ? 'border-b border-[var(--month-line)]' : 'border-b border-[var(--grid)]'}>
+            <tr key={r.date} className={weekEdge ? 'border-b border-[var(--month-line)]' : 'border-b border-[var(--grid)]'}>
               <td className="px-6 py-2.5 text-left tracking-[0.04em] text-muted-foreground">{`${w} · ${md} ${year}`}</td>
               <td className="px-6 py-2.5 text-right">{fmt(r.forecast_high_f)}</td>
               <td className="px-6 py-2.5 text-right">{fmt(r.actual_high_f)}</td>
