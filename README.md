@@ -56,7 +56,7 @@ forecast is gone forever; a missed actual is repairable via the
 - `npm run test` — unit + component tests
 - `npm run capture:forecast` — run the forecast capture locally (then
   `git checkout data/temperatures.json` to discard, since real data accumulates in CI)
-- `npm run capture:actual [YYYY-MM-DD]` — run the actual capture locally; needs
+- `npm run capture:actual [-- YYYY-MM-DD]` — run the actual capture locally; needs
   the five `NETATMO_*` env vars set and `secrets/netatmo-tokens.enc` present
   (note: each run rotates the Netatmo token — commit the updated token file
   afterward or the CI chain breaks)
