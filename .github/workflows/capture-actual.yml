@@ -1,8 +1,8 @@
 name: Capture actual
 on:
   schedule:
-    - cron: '5 1 * * *'
-    - cron: '5 2 * * *'
+    - cron: '5 23 * * *' # 16:05 PDT
+    - cron: '5 0 * * *' # 16:05 PST (17:05 PDT in summer; harmless re-capture)
   workflow_dispatch:
 
 concurrency:
@@ -16,16 +16,17 @@ jobs:
     permissions:
       contents: write
     steps:
-      # Accepts any evening hour (18:00-23:59 Pacific): GitHub has delivered
-      # scheduled runs up to ~4 hours late (observed 2026-07-03: the 18:05 and
-      # 19:05 firings arrived at 21:46 and 22:53), and a late run still records
-      # the correct daily high. Skipped runs are the wrong-season cron firing
-      # before 18:00, and anything delayed past midnight (wrong date).
-      - name: Evening guard (18:00-23:59 Pacific)
+      # Accepts 16:00-23:59 Pacific: the daily high never happens after 16:00
+      # here, and GitHub has delivered scheduled runs up to ~4 hours late
+      # (observed 2026-07-03: firings arrived 3h41m-3h48m behind schedule), so
+      # the 16:05 target plus an 8-hour tolerance still records the correct
+      # daily high. Skipped runs are the wrong-season cron firing before 16:00
+      # and anything delayed past midnight (wrong date).
+      - name: Afternoon guard (16:00-23:59 Pacific)
         id: guard
         run: |
           H=$(TZ=America/Los_Angeles date +%H)
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$H" -lt 18 ]; then
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$H" -lt 16 ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "Skipping: Pacific hour is $H"
           fi

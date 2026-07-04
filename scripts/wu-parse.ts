@@ -30,7 +30,9 @@ function collectCandidates(obj: unknown, out: Candidate[]): void {
 }
 
 /**
- * Extract today's forecasted calendar-day high (°F) from the WU forecast page.
+ * Extract the target date's forecasted calendar-day high (°F) from the WU
+ * forecast page (any date inside WU's multi-day window, e.g. tomorrow for the
+ * evening-before capture).
  * WU server-renders its API responses into <script id="app-root-state"> with
  * HTML-entity encoding (&q; for quotes). Keys are per-request hashes, so the
  * daily-forecast responses are found structurally. `&a;` must be decoded last.
@@ -41,10 +43,10 @@ function collectCandidates(obj: unknown, out: Candidate[]): void {
  * If the surviving candidates disagree about today's high, that's a drift
  * signal and we throw rather than silently record the wrong location.
  *
- * Today's entry is looked up by date, NOT assumed to be index 0 — shortly
- * after midnight WU's state can still list yesterday as day zero.
+ * The target entry is looked up by date, NOT assumed to be at a fixed index —
+ * shortly after midnight WU's state can still list yesterday as day zero.
  */
-export function extractForecastHigh(html: string, todayISO: string, geocode: string): number {
+export function extractForecastHigh(html: string, targetISO: string, geocode: string): number {
   const m = html.match(/<script[^>]*id="app-root-state"[^>]*>([\s\S]*?)<\/script>/);
   if (!m) throw new Error('app-root-state script tag not found — page structure changed?');
   const json = m[1]
@@ -71,7 +73,7 @@ export function extractForecastHigh(html: string, todayISO: string, geocode: str
 
   const found: { value: number; url: string }[] = [];
   for (const { daily, url } of candidates) {
-    const idx = daily.validTimeLocal.findIndex((t) => t?.slice(0, 10) === todayISO);
+    const idx = daily.validTimeLocal.findIndex((t) => t?.slice(0, 10) === targetISO);
     if (idx === -1) continue;
     const max = daily.calendarDayTemperatureMax[idx];
     if (typeof max !== 'number') {
@@ -81,13 +83,13 @@ export function extractForecastHigh(html: string, todayISO: string, geocode: str
   }
   if (found.length === 0) {
     throw new Error(
-      `today ${todayISO} not found in forecast window starting ${candidates[0].daily.validTimeLocal[0]}`,
+      `target ${targetISO} not found in forecast window starting ${candidates[0].daily.validTimeLocal[0]}`,
     );
   }
   const distinct = [...new Set(found.map((f) => f.value))];
   if (distinct.length > 1) {
     const detail = found.map((f) => `${f.value} (${f.url})`).join(' vs ');
-    throw new Error(`conflicting forecast highs for ${todayISO}: ${detail}`);
+    throw new Error(`conflicting forecast highs for ${targetISO}: ${detail}`);
   }
   return distinct[0];
 }

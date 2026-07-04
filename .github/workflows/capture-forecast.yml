@@ -1,8 +1,8 @@
 name: Capture forecast
 on:
   schedule:
-    - cron: '5 7 * * *'
-    - cron: '5 8 * * *'
+    - cron: '5 4 * * *' # 21:05 PDT the evening before the target day
+    - cron: '5 5 * * *' # 21:05 PST (22:05 PDT in summer; idempotent no-op)
   workflow_dispatch:
 
 concurrency:
@@ -16,17 +16,19 @@ jobs:
     permissions:
       contents: write
     steps:
-      # Accepts hours 00-06 Pacific: GitHub has delivered scheduled runs up to
-      # ~4 hours late (observed 2026-07-03), and a delayed run must not
-      # silently drop the night's capture — forecasts cannot be backfilled. A
-      # pre-dawn capture still records the overnight forecast. Under PDT both
-      # crons pass the guard; the capture script is idempotent by day, so the
-      # second run is a no-op.
-      - name: Morning guard (00:00-06:59 Pacific)
+      # Accepts 21:00-23:59 and 00:00-06:59 Pacific. The capture targets
+      # tomorrow's forecast from 21:05 the evening before; GitHub has delivered
+      # scheduled runs up to ~4 hours late (observed 2026-07-03), and a delayed
+      # run must not silently drop the capture — forecasts cannot be
+      # backfilled. From 21:00 the script targets tomorrow; a run that slips
+      # past midnight targets the day it lands on (the same forecast day).
+      # Under PDT both crons pass the guard; the capture script is idempotent
+      # by target day, so the second run is a no-op.
+      - name: Evening guard (21:00-06:59 Pacific)
         id: guard
         run: |
           H=$(TZ=America/Los_Angeles date +%H)
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$H" -gt 6 ]; then
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$H" -ge 7 ] && [ "$H" -le 20 ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "Skipping: Pacific hour is $H"
           fi
@@ -55,6 +57,9 @@ jobs:
           git config user.email "github-actions@users.noreply.github.com"
           git add data/temperatures.json
           git diff --cached --quiet && exit 0
-          git commit -m "data: forecast $(TZ=America/Los_Angeles date +%F)"
+          # From 21:00 the record is for tomorrow (mirrors pacificForecastTargetISO).
+          H=$(TZ=America/Los_Angeles date +%H)
+          if [ "$H" -ge 21 ]; then D=$(TZ=America/Los_Angeles date -d tomorrow +%F); else D=$(TZ=America/Los_Angeles date +%F); fi
+          git commit -m "data: forecast $D"
           git pull --rebase --autostash
           git push
