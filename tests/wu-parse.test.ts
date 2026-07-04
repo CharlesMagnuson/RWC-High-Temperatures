@@ -19,7 +19,10 @@ function candidate(url: string, maxes: (number | null)[], dates: string[]) {
   return {
     u: url,
     b: {
-      calendarDayTemperatureMax: maxes,
+      temperatureMax: maxes,
+      // Decoy: always higher than temperatureMax, so any test passing while
+      // the parser reads this field instead would fail loudly.
+      calendarDayTemperatureMax: maxes.map((v) => (v === null ? null : v + 3)),
       validTimeLocal: dates.map((d) => `${d}T07:00:00-0700`),
     },
   };
@@ -30,12 +33,19 @@ function dailyUrl(geocode: string, range: string): string {
 }
 
 describe('extractForecastHigh', () => {
-  it('extracts the high at index 0 when today is day 0', () => {
-    expect(extractForecastHigh(html, '2026-07-02', GEOCODE)).toBe(75);
+  it('reads the displayed daytime high (temperatureMax), not calendarDayTemperatureMax', () => {
+    // Fixture day 1 (07-03): temperatureMax 77. Captured live 2026-07-04:
+    // the WU page showed 75 (temperatureMax) while calendarDayTemperatureMax
+    // said 78-80 — the tracker must record the number the page displays.
+    expect(extractForecastHigh(html, '2026-07-03', GEOCODE)).toBe(77);
+    expect(extractForecastHigh(html, '2026-07-04', GEOCODE)).toBe(75);
   });
 
-  it('finds today at a later index when WU has not rolled over', () => {
-    expect(extractForecastHigh(html, '2026-07-03', GEOCODE)).toBe(77);
+  it("throws for day 0 after its daytime has passed (temperatureMax null)", () => {
+    // Fixture captured 00:27 PT: day 0 is yesterday (07-02), whose daytime
+    // high is already null. The old calendarDayTemperatureMax field still had
+    // a number here, which is how off-window captures recorded wrong values.
+    expect(() => extractForecastHigh(html, '2026-07-02', GEOCODE)).toThrow(/is not a number/);
   });
 
   it('throws when today is not in the forecast window', () => {

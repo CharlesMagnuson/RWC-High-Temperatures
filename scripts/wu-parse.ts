@@ -1,5 +1,5 @@
 interface DailyForecast {
-  calendarDayTemperatureMax: (number | null)[];
+  temperatureMax: (number | null)[];
   validTimeLocal: (string | null)[];
 }
 
@@ -19,7 +19,7 @@ function collectCandidates(obj: unknown, out: Candidate[]): void {
     const o = obj as Record<string, unknown>;
     if (typeof o.u === 'string' && o.b && typeof o.b === 'object') {
       const b = o.b as Record<string, unknown>;
-      if (Array.isArray(b.calendarDayTemperatureMax) && Array.isArray(b.validTimeLocal)) {
+      if (Array.isArray(b.temperatureMax) && Array.isArray(b.validTimeLocal)) {
         out.push({ daily: b as unknown as DailyForecast, url: o.u });
       }
     }
@@ -30,9 +30,18 @@ function collectCandidates(obj: unknown, out: Candidate[]): void {
 }
 
 /**
- * Extract the target date's forecasted calendar-day high (°F) from the WU
- * forecast page (any date inside WU's multi-day window, e.g. tomorrow for the
+ * Extract the target date's forecasted daytime high (°F) from the WU forecast
+ * page (any date inside WU's multi-day window, e.g. tomorrow for the
  * evening-before capture).
+ *
+ * Reads `temperatureMax` — the daytime-daypart high the WU page displays —
+ * NOT `calendarDayTemperatureMax`, the midnight-to-midnight value that can
+ * run several degrees hotter (observed 2026-07-04: the page showed 75 while
+ * calendarDayTemperatureMax said 78-80). The tracker records the number a
+ * person watching the page saw. `temperatureMax` is null once the date's
+ * daytime has passed, so an off-window capture fails loudly instead of
+ * recording a value nobody was ever shown.
+ *
  * WU server-renders its API responses into <script id="app-root-state"> with
  * HTML-entity encoding (&q; for quotes). Keys are per-request hashes, so the
  * daily-forecast responses are found structurally. `&a;` must be decoded last.
@@ -75,9 +84,11 @@ export function extractForecastHigh(html: string, targetISO: string, geocode: st
   for (const { daily, url } of candidates) {
     const idx = daily.validTimeLocal.findIndex((t) => t?.slice(0, 10) === targetISO);
     if (idx === -1) continue;
-    const max = daily.calendarDayTemperatureMax[idx];
+    const max = daily.temperatureMax[idx];
     if (typeof max !== 'number') {
-      throw new Error(`calendarDayTemperatureMax[${idx}] is not a number (got ${JSON.stringify(max)}) from ${url}`);
+      throw new Error(
+        `temperatureMax[${idx}] for ${targetISO} is not a number (got ${JSON.stringify(max)}; daytime already past?) from ${url}`,
+      );
     }
     found.push({ value: max, url });
   }
