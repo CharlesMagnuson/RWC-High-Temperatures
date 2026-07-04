@@ -16,15 +16,17 @@ jobs:
     permissions:
       contents: write
     steps:
-      # Accepts hours 00 AND 01 Pacific: GitHub can delay scheduled runs by an
-      # hour or more, and a delayed run must not silently drop the night's
-      # capture. Under PDT both crons then pass the guard; the capture script
-      # is idempotent by day, so the second run is a no-op.
-      - name: DST guard (run only at 00:xx or 01:xx Pacific)
+      # Accepts hours 00-06 Pacific: GitHub has delivered scheduled runs up to
+      # ~4 hours late (observed 2026-07-03), and a delayed run must not
+      # silently drop the night's capture — forecasts cannot be backfilled. A
+      # pre-dawn capture still records the overnight forecast. Under PDT both
+      # crons pass the guard; the capture script is idempotent by day, so the
+      # second run is a no-op.
+      - name: Morning guard (00:00-06:59 Pacific)
         id: guard
         run: |
           H=$(TZ=America/Los_Angeles date +%H)
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$H" != "00" ] && [ "$H" != "01" ]; then
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$H" -gt 6 ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "Skipping: Pacific hour is $H"
           fi

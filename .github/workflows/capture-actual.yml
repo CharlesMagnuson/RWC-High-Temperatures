@@ -16,11 +16,16 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: DST guard (run only at 18:xx-19:xx Pacific)
+      # Accepts any evening hour (18:00-23:59 Pacific): GitHub has delivered
+      # scheduled runs up to ~4 hours late (observed 2026-07-03: the 18:05 and
+      # 19:05 firings arrived at 21:46 and 22:53), and a late run still records
+      # the correct daily high. Skipped runs are the wrong-season cron firing
+      # before 18:00, and anything delayed past midnight (wrong date).
+      - name: Evening guard (18:00-23:59 Pacific)
         id: guard
         run: |
           H=$(TZ=America/Los_Angeles date +%H)
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$H" != "18" ] && [ "$H" != "19" ]; then
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$H" -lt 18 ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "Skipping: Pacific hour is $H"
           fi
