@@ -8,9 +8,10 @@ Design spec: `docs/superpowers/specs/2026-07-03-high-temperature-tracker-design.
 
 ## How it works
 
-- **00:05 Pacific** — `capture-forecast` scrapes wunderground.com's embedded
-  forecast JSON and records today's forecasted high.
-- **18:05 Pacific** — `capture-actual` asks the Netatmo API for the day's max
+Times are approximate. GitHub does not run actions reliably. They usually run 1-2 hours late.
+- **22:05 Pacific** — `capture-forecast` scrapes wunderground.com's embedded
+  forecast JSON and records tomorrow's forecasted high.
+- **16:05 Pacific** — `capture-actual` asks the Netatmo API for the day's max
   outdoor temperature (max since local midnight).
 - Both commit to `data/temperatures.json`; each commit rebuilds the dashboard.
 - `Δ = actual − forecast`. Positive = hotter than forecast.
