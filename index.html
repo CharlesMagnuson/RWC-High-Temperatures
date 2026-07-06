@@ -7,10 +7,10 @@
     <title>High Temperatures — Redwood City, CA</title>
     <script>
       // Set theme class before first paint to avoid a light flash for dark users.
+      // Theme follows the system; localStorage is intentionally not consulted.
       try {
-        var t = localStorage.getItem('theme');
-        var dark = t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-        if (dark) document.documentElement.classList.add('dark');
+        if (matchMedia('(prefers-color-scheme: dark)').matches)
+          document.documentElement.classList.add('dark');
       } catch (e) {}
     </script>
   </head>
