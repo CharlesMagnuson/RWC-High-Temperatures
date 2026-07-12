@@ -65,8 +65,8 @@
   {
     "date": "2026-07-12",
     "forecast_high_f": 82,
-    "actual_high_f": null,
+    "actual_high_f": 86,
     "forecast_captured_at": "2026-07-12T06:39:47.972Z",
-    "actual_captured_at": null
+    "actual_captured_at": "2026-07-12T23:57:37.087Z"
   }
 ]
