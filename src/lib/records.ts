@@ -6,7 +6,7 @@ import type { DayRecord } from '../../scripts/data-store';
 export type Season = 'spring' | 'summer' | 'fall' | 'winter';
 export type View = 'week' | 'month' | 'year' | Season;
 
-const VIEW_DAYS = { week: 14, month: 31, year: 365 } as const;
+const VIEW_DAYS = { week: 7, month: 30, year: 365 } as const;
 
 // Meteorological seasons: month-aligned windows keep the math to ISO string
 // comparisons (no timezone handling). Winter runs Dec 1 → end of February.
@@ -32,17 +32,26 @@ export function seasonRange(season: Season, anchor: string): { start: string; en
   return { start: `${startYear}-${pad2(month)}-01`, end: `${endYear}-${pad2(em)}-${pad2(lastDay)}` };
 }
 
+/** ISO date `days` before `dateISO`; UTC ms arithmetic is exact for date-only values. */
+const daysBefore = (dateISO: string, days: number): string =>
+  new Date(new Date(`${dateISO}T00:00:00Z`).getTime() - days * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+
 /**
- * Records visible in a view. Week/month/year are trailing windows over the
- * last N days; seasons are calendar windows anchored on the newest record
- * (records are stored sorted ascending by date).
+ * Records visible in a view, all anchored on the newest record's date
+ * (records are stored sorted ascending by date). Week/month/year are rolling
+ * windows of the last 7/30/365 calendar days inclusive of the anchor — date
+ * windows, not record counts, so capture gaps don't stretch them. Seasons
+ * are calendar windows.
  */
 export function sliceView(records: DayRecord[], view: View): DayRecord[] {
-  if (view === 'week' || view === 'month' || view === 'year') {
-    return records.slice(-VIEW_DAYS[view]);
-  }
   const anchor = records[records.length - 1]?.date;
   if (!anchor) return [];
+  if (view === 'week' || view === 'month' || view === 'year') {
+    const start = daysBefore(anchor, VIEW_DAYS[view] - 1);
+    return records.filter((r) => r.date >= start);
+  }
   const { start, end } = seasonRange(view, anchor);
   return records.filter((r) => r.date >= start && r.date <= end);
 }

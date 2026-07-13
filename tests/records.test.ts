@@ -12,12 +12,52 @@ const rec = (date: string): DayRecord => ({
 const dates = (records: DayRecord[]) => records.map((r) => r.date);
 
 describe('sliceView trailing windows', () => {
-  it('week returns the last 14 records', () => {
-    const all = Array.from({ length: 30 }, (_, i) =>
-      rec(`2026-06-${String(i + 1).padStart(2, '0')}`),
-    );
-    expect(sliceView(all, 'week')).toHaveLength(14);
-    expect(sliceView(all, 'week')[0].date).toBe('2026-06-17');
+  // Rolling date windows (7/30/365 days) anchored on the newest record's
+  // date, inclusive — not a count of records, so gaps in capture don't
+  // stretch the window.
+  const june = Array.from({ length: 30 }, (_, i) =>
+    rec(`2026-06-${String(i + 1).padStart(2, '0')}`),
+  );
+
+  it('week returns the last 7 days of records', () => {
+    expect(dates(sliceView(june, 'week'))).toEqual([
+      '2026-06-24',
+      '2026-06-25',
+      '2026-06-26',
+      '2026-06-27',
+      '2026-06-28',
+      '2026-06-29',
+      '2026-06-30',
+    ]);
+  });
+
+  it('week window is 7 calendar days even when records are missing', () => {
+    // Newest is Jun 30; window is Jun 24–30. Jun 23 is 8 days back — excluded
+    // even though only 3 records fall inside the window.
+    const sparse = [rec('2026-06-10'), rec('2026-06-23'), rec('2026-06-24'), rec('2026-06-27'), rec('2026-06-30')];
+    expect(dates(sliceView(sparse, 'week'))).toEqual(['2026-06-24', '2026-06-27', '2026-06-30']);
+  });
+
+  it('month returns the last 30 days of records', () => {
+    // Anchor Jun 30; 30-day window starts Jun 1, so May 31 is excluded.
+    const all = [rec('2026-05-31'), ...june];
+    expect(dates(sliceView(all, 'month'))[0]).toBe('2026-06-01');
+    expect(sliceView(all, 'month')).toHaveLength(30);
+  });
+
+  it('year returns the last 365 days of records', () => {
+    const all = [rec('2025-06-29'), rec('2025-07-01'), rec('2026-06-30')];
+    // Anchor 2026-06-30; 365-day window starts 2025-07-01.
+    expect(dates(sliceView(all, 'year'))).toEqual(['2025-07-01', '2026-06-30']);
+  });
+
+  it('returns everything when the dataset is smaller than the window', () => {
+    const small = [rec('2026-07-03'), rec('2026-07-04'), rec('2026-07-05')];
+    expect(dates(sliceView(small, 'week'))).toEqual(['2026-07-03', '2026-07-04', '2026-07-05']);
+  });
+
+  it('returns empty for an empty dataset', () => {
+    expect(sliceView([], 'week')).toEqual([]);
   });
 });
 
