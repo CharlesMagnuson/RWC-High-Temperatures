@@ -69,6 +69,10 @@
   --radius: 0;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   @apply bg-background text-foreground font-mono antialiased;
 }
