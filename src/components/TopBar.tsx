@@ -1,4 +1,5 @@
 import { MoonStars, Sun } from '@phosphor-icons/react';
+import { play } from 'cuelume';
 import type { Mode } from '../lib/colors';
 import { fmtDay } from '../lib/display-dates';
 
@@ -35,7 +36,10 @@ export function TopBar({ mode, onToggle, lastDate }: Props) {
           {status}
         </div>
         <button
-          onClick={onToggle}
+          onClick={() => {
+            play('toggle');
+            onToggle();
+          }}
           aria-label="Toggle theme"
           className="flex h-6 w-8 items-center justify-center border border-border text-muted-foreground"
         >

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { play } from 'cuelume';
 import { colorOf, ARMS, type Mode } from '../lib/colors';
 import { weekOf, monthOf, fmtDay } from '../lib/display-dates';
 import { deltaOf, type DayRecord } from '../lib/records';
@@ -138,7 +139,11 @@ export function DumbbellChart({ records, mode }: Props) {
         })}
         {records.map((rec, i) => (
           <rect key={rec.date} data-hit x={cx(i) - slot / 2} y={PAD.t} width={slot} height={H - PAD.t - PAD.b}
-            fill="transparent" onMouseEnter={() => setHover(i)} />
+            fill="transparent"
+            onMouseEnter={() => {
+              play('press');
+              setHover(i);
+            }} />
         ))}
       </svg>
       <div className="flex flex-wrap items-center justify-between gap-5 px-0 pt-3.5 pb-1 text-[10px] tracking-[0.1em] text-muted-foreground">

@@ -1,4 +1,5 @@
 import { Fragment, useState } from 'react';
+import { play } from 'cuelume';
 import rawRecords from '../data/temperatures.json';
 import { Card } from './components/ui/card';
 import { DumbbellChart } from './components/DumbbellChart';
@@ -55,7 +56,10 @@ export default function App() {
                 <Fragment key={v}>
                   {v === 'spring' && <div aria-hidden className="w-px self-stretch bg-border" />}
                   <button
-                    onClick={() => setView(v)}
+                    onClick={() => {
+                      play('tick');
+                      setView(v);
+                    }}
                     aria-pressed={v === view}
                     className={cn(
                       'px-4.5 py-2 text-[11px] font-semibold tracking-[0.14em]',
