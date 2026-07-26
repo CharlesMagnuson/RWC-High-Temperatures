@@ -159,5 +159,12 @@
     "actual_high_f": 90,
     "forecast_captured_at": "2026-07-25T06:23:12.628Z",
     "actual_captured_at": "2026-07-26T03:46:33.735Z"
+  },
+  {
+    "date": "2026-07-26",
+    "forecast_high_f": 73,
+    "actual_high_f": null,
+    "forecast_captured_at": "2026-07-26T06:41:44.915Z",
+    "actual_captured_at": null
   }
 ]
