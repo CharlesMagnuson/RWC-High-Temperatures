@@ -71,6 +71,10 @@
 
 html {
   scrollbar-gutter: stable;
+  /* Paint the root, not just body: the reserved scrollbar gutter is drawn as
+     an extension of html's own background. A transparent html leaves the
+     gutter on the UA canvas color, which lags theme switches. */
+  background-color: var(--background);
 }
 
 body {
