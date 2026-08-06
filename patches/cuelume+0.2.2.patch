@@ -1,0 +1,31 @@
+diff --git a/node_modules/cuelume/dist/sounds/recipes.js b/node_modules/cuelume/dist/sounds/recipes.js
+index fa94da6..6f7fd53 100644
+--- a/node_modules/cuelume/dist/sounds/recipes.js
++++ b/node_modules/cuelume/dist/sounds/recipes.js
+@@ -52,7 +52,7 @@ export const RECIPES = {
+     },
+     /** A focused, bandpass-filtered tick with a bright sine ping on top — crisp and instant. */
+     tick: {
+-        masterGain: 0.4,
++        masterGain: 1.0,
+         layers: [
+             { kind: "noise", filterType: "bandpass", filterFrequency: 5400, filterQ: 1.8, attack: 0.001, decay: 0.018, peak: 0.14 },
+             { kind: "tone", waveform: "sine", frequency: 2600, attack: 0.001, decay: 0.012, peak: 0.018 },
+@@ -60,7 +60,7 @@ export const RECIPES = {
+     },
+     /** A dull, muted knock — the "down" half of a press/release pair, like a key bottoming out. */
+     press: {
+-        masterGain: 0.4,
++        masterGain: 1.0,
+         layers: [
+             { kind: "noise", filterType: "bandpass", filterFrequency: 1700, filterQ: 1.4, attack: 0.001, decay: 0.02, peak: 0.13 },
+         ],
+@@ -75,7 +75,7 @@ export const RECIPES = {
+     },
+     /** A two-part click-clack, like a mechanical switch flipping between states. */
+     toggle: {
+-        masterGain: 0.4,
++        masterGain: 1.0,
+         layers: [
+             { kind: "noise", filterType: "bandpass", filterFrequency: 2200, filterQ: 1.6, attack: 0.001, decay: 0.016, peak: 0.12 },
+             { kind: "noise", filterType: "bandpass", filterFrequency: 3800, filterQ: 1.6, offset: 0.024, attack: 0.001, decay: 0.02, peak: 0.1 },

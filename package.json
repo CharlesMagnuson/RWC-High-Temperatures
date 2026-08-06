@@ -6,6 +6,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "postinstall": "patch-package",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "test": "vitest run",
@@ -17,7 +18,7 @@
     "@fontsource/jetbrains-mono": "^5.2.8",
     "@phosphor-icons/react": "^2.1.10",
     "clsx": "^2.1.1",
-    "cuelume": "^0.1.2",
+    "cuelume": "^0.2.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "tailwind-merge": "^3.6.0"
@@ -30,6 +31,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
     "jsdom": "^29.1.1",
+    "patch-package": "^8.0.1",
     "tailwindcss": "^4.3.2",
     "tsx": "^4.22.5",
     "typescript": "^6.0.3",
