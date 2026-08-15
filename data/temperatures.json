@@ -303,8 +303,8 @@
   {
     "date": "2026-08-15",
     "forecast_high_f": 72,
-    "actual_high_f": null,
+    "actual_high_f": 80,
     "forecast_captured_at": "2026-08-15T04:36:57.577Z",
-    "actual_captured_at": null
+    "actual_captured_at": "2026-08-15T23:22:14.130Z"
   }
 ]
