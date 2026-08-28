@@ -73,3 +73,13 @@ jobs:
           git commit -m "data: actual $(TZ=America/Los_Angeles date +%F)"
           git pull --rebase --autostash
           git push
+      # Dead-man's switch: healthchecks.io (high-temp-actual) expects this ping on
+      # schedule (+1h grace) and emails if it is missing or /fail arrives.
+      # Guard-skipped fallback runs do not ping: a skip must not mask a
+      # missed capture.
+      - name: Healthcheck ping
+        if: success() && steps.guard.outputs.skip != 'true'
+        run: curl -fsS -m 10 --retry 3 -o /dev/null "https://hc-ping.com/${{ secrets.HC_PING_KEY }}/high-temp-actual"
+      - name: Healthcheck fail
+        if: failure() && steps.guard.outputs.skip != 'true'
+        run: curl -fsS -m 10 --retry 3 -o /dev/null "https://hc-ping.com/${{ secrets.HC_PING_KEY }}/high-temp-actual/fail"
