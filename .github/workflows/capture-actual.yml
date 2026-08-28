@@ -1,8 +1,15 @@
 name: Capture actual
+# PRIMARY TRIGGER (since 2026-08-28): the `gha-cron` Cloudflare Worker
+# (~/Developer/gha-cron) fires workflow_dispatch at exactly 16:30 Pacific,
+# resolving DST itself. GitHub's scheduler had degraded to 7-11 hour delays
+# (8/27: fired 06:48 UTC the next day). The cron below is a FALLBACK only:
+# 00:30 UTC is 16:30 PST / 17:30 PDT, never earlier than the Worker in either
+# regime, and a re-capture is harmless (max over the day). The afternoon
+# guard applies only to schedule events; the Worker's dispatch runs
+# unconditionally.
 on:
   schedule:
-    - cron: '5 23 * * *' # 16:05 PDT
-    - cron: '5 0 * * *' # 16:05 PST (17:05 PDT in summer; harmless re-capture)
+    - cron: '30 0 * * *' # 16:30 PST / 17:30 PDT
   workflow_dispatch:
 
 concurrency:
@@ -16,12 +23,11 @@ jobs:
     permissions:
       contents: write
     steps:
-      # Accepts 16:00-23:59 Pacific: the daily high never happens after 16:00
-      # here, and GitHub has delivered scheduled runs up to ~4 hours late
-      # (observed 2026-07-03: firings arrived 3h41m-3h48m behind schedule), so
-      # the 16:05 target plus an 8-hour tolerance still records the correct
-      # daily high. Skipped runs are the wrong-season cron firing before 16:00
-      # and anything delayed past midnight (wrong date).
+      # Fallback schedule events only (the Worker's workflow_dispatch skips
+      # this). Accepts 16:00-23:59 Pacific: the daily high never happens after
+      # 16:00 here, so a delayed fallback (GitHub delivers scheduled runs hours
+      # late) still records the correct daily high. Anything delayed past
+      # midnight is skipped (wrong date).
       - name: Afternoon guard (16:00-23:59 Pacific)
         id: guard
         run: |

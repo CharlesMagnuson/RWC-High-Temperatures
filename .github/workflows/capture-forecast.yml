@@ -1,8 +1,19 @@
 name: Capture forecast
+# PRIMARY TRIGGER (since 2026-08-28): the `gha-cron` Cloudflare Worker
+# (~/Developer/gha-cron) fires workflow_dispatch at exactly 00:00 Pacific,
+# resolving DST itself, so the record is the forecast as it stood at the
+# start of the target day. GitHub's own scheduler had degraded to 7-11 hour
+# delays (8/27: both old 21:05 crons fired ~15:00-16:00 UTC, i.e. 8-9am
+# Pacific -- a next-morning forecast is not a start-of-day forecast).
+#
+# The cron below is a FALLBACK only. First capture wins, so it must never
+# be able to fire BEFORE the Worker: 08:00 UTC is 00:00 PST / 01:00 PDT,
+# never pre-midnight in either regime (a 07:00 UTC cron would be 23:00 PST
+# in winter and would pre-empt the midnight capture). The evening guard
+# applies only to schedule events; the Worker's dispatch runs unconditionally.
 on:
   schedule:
-    - cron: '5 4 * * *' # 21:05 PDT the evening before the target day
-    - cron: '5 5 * * *' # 21:05 PST (22:05 PDT in summer; idempotent no-op)
+    - cron: '0 8 * * *' # 00:00 PST / 01:00 PDT; delayed firings land in the guard's skip window
   workflow_dispatch:
 
 concurrency:
@@ -16,19 +27,20 @@ jobs:
     permissions:
       contents: write
     steps:
-      # Accepts 21:00-23:59 and 00:00-06:59 Pacific. The capture targets
-      # tomorrow's forecast from 21:05 the evening before; GitHub has delivered
-      # scheduled runs up to ~4 hours late (observed 2026-07-03), and a delayed
-      # run must not silently drop the capture — forecasts cannot be
-      # backfilled. From 21:00 the script targets tomorrow; a run that slips
-      # past midnight targets the day it lands on (the same forecast day).
-      # Under PDT both crons pass the guard; the capture script is idempotent
-      # by target day, so the second run is a no-op.
-      - name: Evening guard (21:00-06:59 Pacific)
+      # Fallback schedule events only (the Worker's workflow_dispatch skips
+      # this). Accepts 00:00-06:59 Pacific: the capture is idempotent by
+      # target day, so if the Worker already captured at midnight this is a
+      # no-op, and if it didn't, an early-morning capture is still the
+      # start-of-day forecast. Anything later (GitHub delivers scheduled runs
+      # hours late) is skipped: a mid-morning forecast is a different forecast,
+      # and forecasts cannot be backfilled, so a gap beats a wrong value.
+      # Pre-midnight (21-23) is also skipped -- from 21:00 the script targets
+      # tomorrow and, first capture winning, would pre-empt the midnight run.
+      - name: Overnight guard (00:00-06:59 Pacific)
         id: guard
         run: |
           H=$(TZ=America/Los_Angeles date +%H)
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$H" -ge 7 ] && [ "$H" -le 20 ]; then
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$H" -ge 7 ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "Skipping: Pacific hour is $H"
           fi
