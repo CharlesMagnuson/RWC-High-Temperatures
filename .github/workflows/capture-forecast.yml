@@ -1,6 +1,6 @@
 name: Capture forecast
-# PRIMARY TRIGGER (since 2026-08-28): the `gha-cron` Cloudflare Worker
-# (~/Developer/gha-cron) fires workflow_dispatch at exactly 00:00 Pacific,
+# PRIMARY TRIGGER (since 2026-08-28): the Scheduler Cloudflare Worker
+# (~/Developer/Scheduler) fires workflow_dispatch at exactly 00:00 Pacific,
 # resolving DST itself, so the record is the forecast as it stood at the
 # start of the target day. GitHub's own scheduler had degraded to 7-11 hour
 # delays (8/27: both old 21:05 crons fired ~15:00-16:00 UTC, i.e. 8-9am

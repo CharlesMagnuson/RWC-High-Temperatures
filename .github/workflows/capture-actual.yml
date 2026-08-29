@@ -1,6 +1,6 @@
 name: Capture actual
-# PRIMARY TRIGGER (since 2026-08-28): the `gha-cron` Cloudflare Worker
-# (~/Developer/gha-cron) fires workflow_dispatch at exactly 16:30 Pacific,
+# PRIMARY TRIGGER (since 2026-08-28): the Scheduler Cloudflare Worker
+# (~/Developer/Scheduler) fires workflow_dispatch at exactly 16:30 Pacific,
 # resolving DST itself. GitHub's scheduler had degraded to 7-11 hour delays
 # (8/27: fired 06:48 UTC the next day). The cron below is a FALLBACK only:
 # 00:30 UTC is 16:30 PST / 17:30 PDT, never earlier than the Worker in either
