@@ -1,7 +1,9 @@
-import { MoonStars, Sun } from '@phosphor-icons/react';
+import { useState } from 'react';
+import { Info, MoonStars, Sun } from '@phosphor-icons/react';
 import { play } from 'cuelume';
 import type { Mode } from '../lib/colors';
 import { fmtDay } from '../lib/display-dates';
+import { AboutDialog } from './AboutDialog';
 
 interface Props {
   mode: Mode;
@@ -12,6 +14,7 @@ interface Props {
 const FRESH_MS = 3 * 86_400_000;
 
 export function TopBar({ mode, onToggle, lastDate }: Props) {
+  const [about, setAbout] = useState(false);
   const fresh =
     lastDate !== null && Date.now() - Date.parse(`${lastDate}T00:00:00Z`) < FRESH_MS;
   const status =
@@ -24,7 +27,19 @@ export function TopBar({ mode, onToggle, lastDate }: Props) {
         <div className="h-3.5 w-3.5 bg-primary" />
         <div>
           <h1 className="text-sm font-bold tracking-[0.18em]">HIGH TEMPERATURES</h1>
-          <div className="mt-0.5 text-[11px] tracking-[0.08em] text-muted-foreground">REDWOOD CITY, CA</div>
+          <div className="mt-0.5 flex items-center gap-1.5 text-[11px] tracking-[0.08em] text-muted-foreground">
+            REDWOOD CITY, CA
+            <button
+              onClick={() => {
+                play('pulse');
+                setAbout(true);
+              }}
+              aria-label="About this site"
+              className="flex items-center text-muted-foreground"
+            >
+              <Info size={13} />
+            </button>
+          </div>
         </div>
       </div>
       <div className="flex items-center gap-4">
@@ -46,6 +61,7 @@ export function TopBar({ mode, onToggle, lastDate }: Props) {
           {mode === 'dark' ? <Sun size={13} /> : <MoonStars size={13} />}
         </button>
       </div>
+      <AboutDialog open={about} onClose={() => setAbout(false)} />
     </div>
   );
 }

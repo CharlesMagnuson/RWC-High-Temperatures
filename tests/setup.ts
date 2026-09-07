@@ -46,3 +46,22 @@ if (typeof window !== 'undefined' && !window.matchMedia) {
     dispatchEvent: vi.fn(),
   }));
 }
+
+// jsdom's HTMLDialogElement is an empty shell: no showModal()/close() and no
+// `close` event. Model just enough of the spec for AboutDialog: toggle `open`
+// and fire `close` so React state can follow the element.
+if (typeof HTMLDialogElement !== 'undefined') {
+  const proto = HTMLDialogElement.prototype;
+  if (!proto.showModal) {
+    proto.showModal = function (this: HTMLDialogElement) {
+      this.open = true;
+    };
+  }
+  if (!proto.close) {
+    proto.close = function (this: HTMLDialogElement) {
+      if (!this.open) return;
+      this.open = false;
+      this.dispatchEvent(new Event('close'));
+    };
+  }
+}
