@@ -2,7 +2,10 @@ name: Capture forecast
 # PRIMARY TRIGGER (since 2026-08-28): the Scheduler Cloudflare Worker
 # (~/Developer/Scheduler) fires workflow_dispatch at exactly 00:00 Pacific,
 # resolving DST itself, so the record is the forecast as it stood at the
-# start of the target day. GitHub's own scheduler had degraded to 7-11 hour
+# start of the target day. Since 2026-09-11 it re-fires every 30 min through
+# 02:30 PDT / 01:30 PST and dispatches only if no workflow_dispatch run
+# exists yet that day (Cloudflare skips firings occasionally; a 00:30
+# forecast beats none). GitHub's own scheduler had degraded to 7-11 hour
 # delays (8/27: both old 21:05 crons fired ~15:00-16:00 UTC, i.e. 8-9am
 # Pacific -- a next-morning forecast is not a start-of-day forecast).
 #
