@@ -499,9 +499,9 @@
   {
     "date": "2026-09-12",
     "forecast_high_f": 73,
-    "actual_high_f": null,
+    "actual_high_f": 85,
     "forecast_captured_at": "2026-09-12T07:11:04.340Z",
-    "actual_captured_at": null
+    "actual_captured_at": "2026-09-13T17:56:04.494Z"
   },
   {
     "date": "2026-09-13",
