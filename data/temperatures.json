@@ -632,8 +632,8 @@
   {
     "date": "2026-10-01",
     "forecast_high_f": 79,
-    "actual_high_f": null,
+    "actual_high_f": 82,
     "forecast_captured_at": "2026-10-01T07:21:33.053Z",
-    "actual_captured_at": null
+    "actual_captured_at": "2026-10-01T23:31:03.229Z"
   }
 ]
