@@ -1,0 +1,21 @@
+<!doctype html><html><head><title>Local Weather Forecast, News and Conditions | Weather Underground</title>
+<!-- Trimmed and scrubbed (all config values except API_KEY replaced) from the client-side app shell WU served with HTTP 404 for /forecast/KCAREDWO201 on 2026-10-06. No forecast data: the browser fetches it from api.weather.com with API_KEY below. -->
+<script type = "text/javascript">
+        (function () {
+          const data = {"API_KEY":"f6d2efe5720d47ea92efe5720df7eaa8","API_URL":"REDACTED","AUTH_URL":"REDACTED","MAPBOX_API_KEY":"REDACTED","STATION_MANAGEMENT_URL":"REDACTED","GOOGLE_CLIENT_ID":"REDACTED","IS_AUTHED":false,"IS_ALLOWED_PREVIEW":true,"IS_AD_FREE":false,"IS_MOBILE":false,"VIEWER_COUNTRY":"REDACTED","USER_LANGUAGE":"REDACTED","IS_PROD":true,"APP_VERSION":"REDACTED","UNITS_PREF":"REDACTED","HELIOS_ADS_ENABLED":true,"HELIOS_SCRIPT_URL":"REDACTED","DPR_SDK_URL":"REDACTED","USE_ANALYTICS":true};
+          const readOnly = ["API_KEY","IS_PROD","AUTH_URL","API_URL","IS_MOBILE","MAPBOX_API_KEY","STATION_MANAGEMENT_URL","GOOGLE_CLIENT_ID","HELIOS_ADS_ENABLED","HELIOS_SCRIPT_URL","DPR_SDK_URL","USE_ANALYTICS","APP_VERSION"];
+          for (const k in data) {
+            if (readOnly.includes(k)) {
+              Object.defineProperty(globalThis, k, {
+                value: data[k],
+                writable: false,
+                configurable: false,
+                enumerable: true
+              });
+            } else {
+              globalThis[k] = data[k];
+            }
+          }
+        }());
+      </script>
+</head><body><div id="app"></div></body></html>
