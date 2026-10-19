@@ -758,8 +758,8 @@
   {
     "date": "2026-10-19",
     "forecast_high_f": 62,
-    "actual_high_f": null,
+    "actual_high_f": 75,
     "forecast_captured_at": "2026-10-19T07:00:50.692Z",
-    "actual_captured_at": null
+    "actual_captured_at": "2026-10-19T23:30:47.827Z"
   }
 ]
