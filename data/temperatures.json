@@ -768,5 +768,12 @@
     "actual_high_f": 71,
     "forecast_captured_at": "2026-10-20T07:00:49.490Z",
     "actual_captured_at": "2026-10-21T05:02:33.791Z"
+  },
+  {
+    "date": "2026-10-21",
+    "forecast_high_f": 67,
+    "actual_high_f": null,
+    "forecast_captured_at": "2026-10-21T07:00:52.250Z",
+    "actual_captured_at": null
   }
 ]
