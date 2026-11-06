@@ -9,7 +9,7 @@ interface Props {
 const PARAGRAPHS = [
   '“Why is it so hot?!?? The forecast last night said high 60s, but it feels like low 80s!” This thought crossed my mind so many times that I decided to start documenting the numbers. The result is RedwoodCityIs.Hot.',
   'Every day at about midnight, the forecasted high temperature for the coming day is recorded. Later in the evening that same day, the actual high temperature is recorded. Those two numbers are then compared on this website to see how they differ over time.',
-  'The data is not scientific. Forecast numbers come from Weather Underground. Actual data comes from the Netatmo temperature sensor under a tree in my patio area. It might not be good enough for a scientific journal, but for demonstrating what I feel outside it’s more than enough.',
+  'The data is not scientific. Forecast numbers come from The Weather Company’s forecast API. Actual data comes from the Netatmo temperature sensor under a tree in my patio area. It might not be good enough for a scientific journal, but for demonstrating what I feel outside it’s more than enough.',
   'RedwoodCityIs.Hot is a product of Magnuson Heavy Industries. Fascism is for losers.',
 ];
 

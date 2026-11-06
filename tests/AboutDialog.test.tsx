@@ -30,7 +30,7 @@ describe('about dialog', () => {
     const { getByLabelText, getByText } = render(<App />);
     fireEvent.click(getByLabelText('About this site'));
     expect(getByText(/The result is RedwoodCityIs\.Hot\./)).toBeTruthy();
-    expect(getByText(/Forecast numbers come from Weather Underground/)).toBeTruthy();
+    expect(getByText(/Forecast numbers come from The Weather Company’s forecast API/)).toBeTruthy();
     expect(getByText(/Fascism is for losers\./)).toBeTruthy();
   });
 
